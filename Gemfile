@@ -39,6 +39,14 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  gem "httparty"
+
+  # Stripe gem for payment gateway
+  gem "stripe"
+
+  gem "dotenv-rails"
+
 end
 
 

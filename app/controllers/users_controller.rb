@@ -32,7 +32,7 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:username, :password, :age)
+    params.require(:user).permit(:username, :password, :phone_number)
   end
 
   def encode_token(payload)

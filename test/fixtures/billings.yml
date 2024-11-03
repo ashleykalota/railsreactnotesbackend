@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  ambulance_request: one
+  amount: 9.99
+  status: MyString
+  payment_method: MyString
+
+two:
+  user: two
+  ambulance_request: two
+  amount: 9.99
+  status: MyString
+  payment_method: MyString

@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::API
   
   before_action :set_user
-  before_action :authorized
+  before_action :authenticate_user!
 
   SECRET_KEY = ENV['JWT_SECRET_KEY'] || 'fallbackSecret'  # Make sure to keep this secret and secure
 
@@ -36,9 +36,10 @@ class ApplicationController < ActionController::API
     end
     
 
-    def authorized
+    def authenticate_user!
       render json: { error: 'Unauthorized' }, status: :unauthorized unless logged_in?
     end
+    
   
     def logged_in_user
       if decoded_token
@@ -65,4 +66,4 @@ class ApplicationController < ActionController::API
       render json: { token: token }, status: :ok
     end
     
-  end
+  end 

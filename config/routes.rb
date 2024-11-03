@@ -1,6 +1,11 @@
 Rails.application.routes.draw do
+  
   resources :notes
   resource :users, only: [:create]
+  resources :ambulance_requests, only: [:index, :update]  # Only allow index and update for authorized users
+  resources :drivers, only: [:index, :show, :create, :update, :destroy]
+  resources :billings, only: [:create, :show]
+  
   post "/login", to: "users#login"
   get "/auto_login", to: "users#auto_login"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -15,4 +20,12 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
+ 
+  # New location routes
+  get '/google_maps_api_key', to: 'locations#api_key'
+  get "locations/directions", to: "locations#directions"
+  get "locations/distance_matrix", to: "locations#distance_matrix"
+  post "/ambulance_requests", to: "ambulance_requests#create_request" # Allow guests to create requests
+
+  
 end
