@@ -43,7 +43,7 @@ group :development, :test do
   gem "httparty"
 
   # Stripe gem for payment gateway
-  gem "stripe"
+  #gem "stripe"
 
   gem "dotenv-rails"
 
