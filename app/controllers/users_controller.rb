@@ -1,29 +1,29 @@
 class UsersController < ApplicationController
-  before_action :authorized, only: [:auto_login]
+  skip_before_action :authenticate_user!, only: [:create, :login]  # Skip authentication for signup and login
 
   # REGISTER
   def create
     @user = User.new(user_params)
-    if @user.save  # Using save instead of create to trigger validations
+    if @user.save
       token = encode_token({ user_id: @user.id })
       render json: { user: @user, token: token }
     else
-      render json: { error: "Invalid username or password" }, status: :unprocessable_entity
+      Rails.logger.debug "User creation failed: #{@user.errors.full_messages}"
+      render json: { error: @user.errors.full_messages }, status: :unprocessable_entity
     end
   end
+  
 
   # LOGGING IN
   def login
     @user = User.find_by(username: params[:username])
-
     if @user && @user.authenticate(params[:password])
-      token = encode_token({user_id: @user.id})
-      render json: {user: @user, token: token}
+      token = encode_token({ user_id: @user.id })
+      render json: { user: @user, token: token }
     else
-      render json: {error: "Invalid username or password"}
+      render json: { error: "Invalid username or password" }, status: :unauthorized
     end
   end
-
 
   def auto_login
     render json: @user
@@ -32,26 +32,6 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:username, :password, :phone_number)
+    params.require(:user).permit(:username, :password, :phone_number, :email, :role, :name)
   end
-
-  def encode_token(payload)
-    JWT.encode(payload, ENV['JWT_SECRET_KEY'])
-  end
-
-  def authorized
-    header = request.headers['Authorization']
-    if header
-      token = header.split(' ')[1] 
-      begin
-        decoded = JWT.decode(token, ENV['JWT_SECRET_KEY'], true, { algorithm: 'HS256' })[0]
-        @user = User.find(decoded['user_id'])
-      rescue JWT::DecodeError
-        render json: { message: 'Please log in' }, status: :unauthorized
-      end
-    else
-      render json: { message: 'Please log in' }, status: :unauthorized
-    end
-  end
-  
 end

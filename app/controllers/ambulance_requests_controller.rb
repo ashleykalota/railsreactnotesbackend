@@ -1,6 +1,9 @@
 class AmbulanceRequestsController < ApplicationController
   # Skip authentication for guests only for the ambulance request creation
-  skip_before_action :authorized, only: [:create_request]
+  skip_before_action :authenticate_user!, only: [:create_request]
+  
+  # Use `authenticate_user!` for actions that require authorization
+  before_action :authenticate_user!, only: [:index, :update_request, :complete_request]
 
   # Action for guests to create ambulance requests
   def create_request
@@ -11,7 +14,7 @@ class AmbulanceRequestsController < ApplicationController
     # Ensure all necessary fields are present
     if origin.present? && destination.present? && phone_number.present?
       # Create a new AmbulanceRequest record
-      request = AmbulanceRequest.create(
+      request = AmbulanceRequest.new(
         origin: origin,
         destination: destination,
         phone_number: phone_number
@@ -30,7 +33,7 @@ class AmbulanceRequestsController < ApplicationController
 
   # Example action for admins to view all requests
   def index
-    if current_user.admin?
+    if @user.admin?
       # Only admins can view all ambulance requests
       requests = AmbulanceRequest.all
       render json: requests, status: :ok
@@ -41,7 +44,7 @@ class AmbulanceRequestsController < ApplicationController
 
   # Example action for dispatchers to update requests
   def update_request
-    if current_user.dispatcher?
+    if @user.dispatcher?
       request = AmbulanceRequest.find(params[:id])
       if request.update(ambulance_request_params)
         render json: { message: "Request updated successfully" }, status: :ok
@@ -55,7 +58,7 @@ class AmbulanceRequestsController < ApplicationController
 
   # Action to mark a request as completed
   def complete_request
-    if current_user.admin? || current_user.dispatcher?
+    if @user.admin? || @user.dispatcher?
       request = AmbulanceRequest.find(params[:id])
       if request.update(status: "completed")
         render json: { message: "Request marked as completed." }, status: :ok
@@ -73,20 +76,4 @@ class AmbulanceRequestsController < ApplicationController
   def ambulance_request_params
     params.require(:ambulance_request).permit(:origin, :destination, :phone_number, :status)
   end
-
-  def authorized
-    header = request.headers['Authorization']
-    if header
-      token = header.split(' ')[1] 
-      begin
-        decoded = JWT.decode(token, ENV['JWT_SECRET_KEY'], true, { algorithm: 'HS256' })[0]
-        @user = User.find(decoded['user_id'])
-      rescue JWT::DecodeError
-        render json: { message: 'Please log in' }, status: :unauthorized
-      end
-    else
-      render json: { message: 'Please log in' }, status: :unauthorized
-    end
-  end
-  
 end

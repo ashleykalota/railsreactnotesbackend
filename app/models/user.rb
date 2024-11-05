@@ -2,7 +2,8 @@ class User < ApplicationRecord
   has_secure_password
   has_many :billings
 
-  enum role: { admin: 'admin', dispatcher: 'dispatcher', driver: 'driver', guest: 'guest' }
+  enum role: { admin: 0, dispatcher: 1, driver: 2, guest: 3 }
+
 
   # Optional: Add validation for role if necessary
   validates :role, inclusion: { in: roles.keys }
