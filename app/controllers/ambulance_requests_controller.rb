@@ -73,4 +73,20 @@ class AmbulanceRequestsController < ApplicationController
   def ambulance_request_params
     params.require(:ambulance_request).permit(:origin, :destination, :phone_number, :status)
   end
+
+  def authorized
+    header = request.headers['Authorization']
+    if header
+      token = header.split(' ')[1] 
+      begin
+        decoded = JWT.decode(token, ENV['JWT_SECRET_KEY'], true, { algorithm: 'HS256' })[0]
+        @user = User.find(decoded['user_id'])
+      rescue JWT::DecodeError
+        render json: { message: 'Please log in' }, status: :unauthorized
+      end
+    else
+      render json: { message: 'Please log in' }, status: :unauthorized
+    end
+  end
+  
 end
