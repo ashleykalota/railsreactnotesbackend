@@ -1,9 +1,21 @@
 class AmbulanceRequestsController < ApplicationController
-  # Skip authentication for guests only for the ambulance request creation
+  # Skip authentication for guests only for ambulance request creation
   skip_before_action :authenticate_user!, only: [:create_request]
   
   # Use `authenticate_user!` for actions that require authorization
   before_action :authenticate_user!, only: [:index, :update_request, :complete_request]
+
+  before_action :check_callbacks
+
+  private
+
+  def check_callbacks
+    Rails.logger.debug "Before Action: Check Callbacks"
+    # Check if the callback exists
+    unless self.class._process_action_callbacks.any? { |cb| cb.filter == :your_callback_method_name }
+      Rails.logger.warn "Callback not found"
+    end
+  end
 
   # Action for guests to create ambulance requests
   def create_request
@@ -24,6 +36,7 @@ class AmbulanceRequestsController < ApplicationController
       if request.save
         render json: { message: "Ambulance request created successfully" }, status: :ok
       else
+        Rails.logger.error "Error details: #{request.errors.full_messages.join(', ')}"
         render json: { error: "Failed to create request" }, status: :unprocessable_entity
       end
     else
@@ -31,10 +44,9 @@ class AmbulanceRequestsController < ApplicationController
     end
   end
 
-  # Example action for admins to view all requests
+  # Action for admins to view all requests
   def index
-    if @user.admin?
-      # Only admins can view all ambulance requests
+    if current_user&.admin?
       requests = AmbulanceRequest.all
       render json: requests, status: :ok
     else
@@ -42,13 +54,14 @@ class AmbulanceRequestsController < ApplicationController
     end
   end
 
-  # Example action for dispatchers to update requests
+  # Action for dispatchers to update requests
   def update_request
-    if @user.dispatcher?
+    if current_user&.dispatcher?
       request = AmbulanceRequest.find(params[:id])
       if request.update(ambulance_request_params)
         render json: { message: "Request updated successfully" }, status: :ok
       else
+        Rails.logger.error "Error details: #{request.errors.full_messages.join(', ')}"
         render json: { error: "Failed to update request" }, status: :unprocessable_entity
       end
     else
@@ -58,19 +71,18 @@ class AmbulanceRequestsController < ApplicationController
 
   # Action to mark a request as completed
   def complete_request
-    if @user.admin? || @user.dispatcher?
+    if current_user&.admin? || current_user&.dispatcher?
       request = AmbulanceRequest.find(params[:id])
       if request.update(status: "completed")
         render json: { message: "Request marked as completed." }, status: :ok
       else
+        Rails.logger.error "Error details: #{request.errors.full_messages.join(', ')}"
         render json: { error: "Failed to complete request" }, status: :unprocessable_entity
       end
     else
       render json: { error: "Unauthorized" }, status: :forbidden
     end
   end
-
-  private
 
   # Strong parameters to whitelist fields
   def ambulance_request_params
