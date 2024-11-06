@@ -3,9 +3,9 @@ class LocationsController < ApplicationController
   skip_before_action :authenticate_user!, only: [:api_key]
 
   # Action to fetch the Google Maps API key
-  def api_key
-    render json: { api_key: ENV['GOOGLE_MAPS_API_KEY'] }
-  end
+    def google_maps_key
+      render json: { apiKey: Rails.configuration.google_maps_api_key }
+    end  
 
   # Action to get directions from origin to destination
   def directions

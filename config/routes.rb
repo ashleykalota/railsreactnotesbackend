@@ -22,7 +22,7 @@ Rails.application.routes.draw do
   # root "posts#index"
  
   # New location routes
-  get '/google_maps_api_key', to: 'locations#api_key'
+  get "/google_maps_key", to: "locations#google_maps_key"
   get "locations/directions", to: "locations#directions"
   get "locations/distance_matrix", to: "locations#distance_matrix"
   post "/ambulance_requests", to: "ambulance_requests#create_request" # Allow guests to create requests
