@@ -40,4 +40,31 @@ class BillingsController < ApplicationController
     billing = Billing.find(params[:id])
     render json: billing
   end
+
+  def calculate_price
+    if params[:distance].nil? || params[:service_type].nil?
+      render json: { error: 'Missing required parameters' }, status: 400
+      return
+    end
+    # Parameters received from the request
+    distance = params[:distance].to_f
+    service_type = params[:service_type]
+  
+    # Example pricing logic
+    base_rate = service_type == 'premium' ? 5 : 3
+    total_price = distance * base_rate
+  
+    # Respond with calculated price
+    render json: { price: total_price }, status: :ok
+   rescue => e
+    render json: { error: "An error occurred: #{e.message}" }, status: :unprocessable_entity
+  end
+
+  def calculate_price_for_service_type(distance, service_type)
+    # Example calculation logic
+    base_rate = service_type == 'premium' ? 200 : 100
+    price = base_rate + (distance * 10) # Example pricing formula
+    price
+  end
+  
 end
