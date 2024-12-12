@@ -1,10 +1,13 @@
 Rails.application.routes.draw do
+  get "home/index"
   
   resources :notes
   resource :users, only: [:create]
   resources :ambulance_requests, only: [:index, :update]  # Only allow index and update for authorized users
   resources :drivers, only: [:index, :show, :create, :update, :destroy]
   resources :billings, only: [:create, :show]
+
+  root "home#index"
   
   post "/login", to: "users#login"
   get "/auto_login", to: "users#auto_login"
