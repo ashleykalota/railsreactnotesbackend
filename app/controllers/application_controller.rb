@@ -1,5 +1,18 @@
 class ApplicationController < ActionController::API
   before_action :authenticate_user!  # Authenticate the user on every request by default
+  before_action :set_current_user
+
+  def set_current_user
+    token = request.headers["Authorization"]&.split(" ")&.last
+    if token
+      decoded_token = JwtService.decode(token)  # Assuming you have a JwtService for decoding the token
+      @current_user = User.find(decoded_token[:user_id])
+    end
+  end
+
+  def current_user
+    @current_user
+  end
 
   SECRET_KEY = ENV['JWT_SECRET_KEY'] || 'fallbackSecret'
 
