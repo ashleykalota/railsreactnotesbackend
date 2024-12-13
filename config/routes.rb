@@ -30,5 +30,6 @@ Rails.application.routes.draw do
   get "locations/distance_matrix", to: "locations#distance_matrix"
   post "/ambulance_requests/create_request", to: "ambulance_requests#create_request" # Allow guests to create requests
   post "/billings/calculate_price", to: "billings#calculate_price"
+  post "/users/create", to: "users#create"
 
 end

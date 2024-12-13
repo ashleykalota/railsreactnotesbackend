@@ -18,6 +18,12 @@ module Ambulance4
         resource '*', headers: :any, methods: [:get, :post, :put, :delete, :options]
       end
     end
+
+    # config/application.rb
+    config.before_initialize do
+     ENV['JWT_SECRET_KEY'] ||= 'yourSuperSecretKey'  # Fallback to your secret key if the environment variable is missing
+    end
+
     
     # Configuration for the application, engines, and railties goes here.
     #

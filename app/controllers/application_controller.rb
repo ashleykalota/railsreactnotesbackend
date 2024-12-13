@@ -2,19 +2,36 @@ class ApplicationController < ActionController::API
   before_action :authenticate_user!  # Authenticate the user on every request by default
   before_action :set_current_user
 
+  SECRET_KEY = ENV['JWT_SECRET_KEY'] || 'fallbackSecret'
+
   def set_current_user
+
+    return if skipped_action?
+
     token = request.headers["Authorization"]&.split(" ")&.last
+
     if token
-      decoded_token = JwtService.decode(token)  # Assuming you have a JwtService for decoding the token
-      @current_user = User.find(decoded_token[:user_id])
+      decoded_token = decode_token(token)
+
+      if decoded_token && decoded_token[:user_id]  # Ensure the decoded token contains user_id
+        @current_user = User.find_by(id: decoded_token[:user_id])  # Safely find the user
+      else
+        render json: { error: 'Invalid token' }, status: :unauthorized
+      end
+    else
+      render json: { error: 'Token missing' }, status: :unauthorized
     end
   end
+  
+  private
+
+ def skipped_action?
+  %w[users#create users#login].include?("#{controller_name}##{action_name}")
+ end
 
   def current_user
-    @current_user
+    @current_user ||= User.find_by(id: decoded_token[:user_id]) if decoded_token
   end
-
-  SECRET_KEY = ENV['JWT_SECRET_KEY'] || 'fallbackSecret'
 
   def encode_token(payload)
     JWT.encode(payload, SECRET_KEY, 'HS256')
@@ -26,16 +43,9 @@ class ApplicationController < ActionController::API
     header
   end    
 
-  def decoded_token
-    header = auth_header
-    return unless header # Return nil if there is no header
-
-    # Extract the token if the header is a string
-    token = header.split(' ')[1] if header.is_a?(String)
-    return unless token # Return nil if token extraction fails
-
+  def decode_token(token)
     begin
-      JWT.decode(token, SECRET_KEY, true, { algorithm: 'HS256' })
+      JWT.decode(token, SECRET_KEY, true, { algorithm: 'HS256' }).first
     rescue JWT::DecodeError => e
       Rails.logger.debug "Token decoding failed: #{e.message}"
       nil

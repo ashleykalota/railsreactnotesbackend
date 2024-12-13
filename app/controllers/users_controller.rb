@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
   skip_before_action :authenticate_user!, only: [:create, :login]  # Skip authentication for signup and login
-
+  skip_before_action :set_current_user, only: [:create, :login] 
   # REGISTER
   def create
     @user = User.new(user_params)

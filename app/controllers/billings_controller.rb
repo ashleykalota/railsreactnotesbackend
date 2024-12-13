@@ -56,7 +56,7 @@ class BillingsController < ApplicationController
   
     # Respond with calculated price
     render json: { price: total_price }, status: :ok
-   rescue => e
+  rescue => e
     render json: { error: "An error occurred: #{e.message}" }, status: :unprocessable_entity
   end
 
@@ -66,5 +66,4 @@ class BillingsController < ApplicationController
     price = base_rate + (distance * 10) # Example pricing formula
     price
   end
-  
 end

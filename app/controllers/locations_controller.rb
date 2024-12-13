@@ -1,6 +1,7 @@
 class LocationsController < ApplicationController
   # Skip authentication for the `api_key` action only
-  skip_before_action :authenticate_user!, only: [:api_key]
+  skip_before_action :authenticate_user!, only: [:google_maps_key]
+  skip_before_action :set_current_user, only: [:google_maps_key]
 
   # Action to fetch the Google Maps API key
     def google_maps_key
